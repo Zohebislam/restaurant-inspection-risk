@@ -43,6 +43,23 @@ def fetch_page(offset: int, limit: int, token: str | None) -> pd.DataFrame:
     raise RuntimeError(f"Could not download rows starting at offset {offset}.")
 
 
+def download_all(token: str | None = None) -> pd.DataFrame:
+    """Download every row of the dataset, one page at a time."""
+    pages, offset = [], 0
+    while True:
+        print(f"Downloading rows {offset:,} to {offset + PAGE_SIZE:,}...")
+        page = fetch_page(offset, PAGE_SIZE, token)
+        if page.empty:
+            break
+        pages.append(page)
+        if len(page) < PAGE_SIZE:
+            break
+        offset += PAGE_SIZE
+    if not pages:
+        raise RuntimeError("The data portal returned no rows.")
+    return pd.concat(pages, ignore_index=True)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--force", action="store_true", help="re-download even if the file exists")
@@ -54,18 +71,7 @@ def main() -> None:
         return
 
     RAW_PATH.parent.mkdir(parents=True, exist_ok=True)
-    pages, offset = [], 0
-    while True:
-        print(f"Downloading rows {offset:,} to {offset + PAGE_SIZE:,}...")
-        page = fetch_page(offset, PAGE_SIZE, args.token)
-        if page.empty:
-            break
-        pages.append(page)
-        if len(page) < PAGE_SIZE:
-            break
-        offset += PAGE_SIZE
-
-    df = pd.concat(pages, ignore_index=True)
+    df = download_all(args.token)
     df.to_csv(RAW_PATH, index=False)
     print(f"Saved {len(df):,} rows to {RAW_PATH}")
 

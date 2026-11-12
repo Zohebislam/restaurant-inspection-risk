@@ -1,0 +1,8 @@
+# Packages for the weekly live pipeline (src/live.py) and its tests.
+# scikit-learn is pinned to the version that trained models/gradient_boosting.joblib,
+# because a saved model should be loaded by the same version that saved it.
+pandas>=2.0
+requests>=2.31
+scikit-learn==1.9.1
+joblib>=1.3
+pytest>=8.0

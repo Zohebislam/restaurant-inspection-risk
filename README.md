@@ -38,6 +38,11 @@ python src/simulation.py      # -> reports/simulation_results.md
 
 # Step 5: interactive app
 streamlit run app.py
+
+# Step 6: live predictions (runs by itself every Monday on GitHub Actions)
+pip install -r requirements-live.txt
+python src/live.py            # -> live/ and reports/live_track_record.md
+pytest                        # tests for the live pipeline
 ```
 
 ## Project structure
@@ -46,13 +51,19 @@ restaurant-inspection-risk/
 ├── data/
 │   ├── raw/                 # downloaded data (not committed to git)
 │   └── processed/           # cleaned data (not committed to git)
-├── models/                  # saved models (not committed to git)
+├── .github/workflows/
+│   └── live.yml             # runs src/live.py every Monday and commits the results
+├── live/
+│   ├── snapshots/           # one file of risk scores per weekly run
+│   └── outcomes.csv         # each new inspection matched to its earlier score
+├── models/                  # saved models (only the frozen live model is committed)
 ├── notebooks/               # exploration notebooks
 ├── reports/
 │   ├── figures/             # all charts
 │   ├── eda_summary.md       # exploration findings
 │   ├── model_results.md     # model vs. baseline
-│   └── simulation_results.md # business impact
+│   ├── simulation_results.md # business impact
+│   └── live_track_record.md # running results of the live predictions
 ├── src/
 │   ├── download_data.py     # step 1a: download
 │   ├── clean.py             # step 1b: clean
@@ -61,9 +72,13 @@ restaurant-inspection-risk/
 │   ├── train.py             # step 2b: models
 │   ├── download_external.py # step 3a: 311 + weather
 │   ├── external_features.py # step 3b: outside-data features
-│   └── simulation.py        # step 4: business impact
+│   ├── simulation.py        # step 4: business impact
+│   └── live.py              # step 6: live weekly predictions
+├── tests/
+│   └── test_live.py         # tests for the live pipeline
 ├── app.py                   # step 5: Streamlit app
-└── requirements.txt
+├── requirements.txt         # packages for steps 1 to 5 and the app
+└── requirements-live.txt    # packages for step 6 (pinned scikit-learn)
 ```
 
 ## Cleaning decisions
@@ -92,3 +107,18 @@ Tested on 15,363 routine inspections from January 2024 to October 2026, using a 
 
 **What didn't:** nearby 311 rodent and sanitation complaints and weather barely changed results ([report](reports/model_results_plus.md)), so a restaurant's own track record carries most of the signal. Logistic regression performed about as well as gradient boosting.
 
+## Live track record
+The results above come from past inspections the model never trained on. Step 6 goes one step further and tests the model on inspections that have not happened yet.
+
+Every Monday a GitHub Action runs `src/live.py`, which:
+1. downloads the newest inspections from the Chicago Data Portal,
+2. checks every new routine inspection against the risk score saved **before** that inspection happened, and
+3. saves a new risk score for every active restaurant to `live/snapshots/`.
+
+The model is frozen, and each snapshot is committed to this repo the day it is made, so the git history shows every prediction came before its result. Running totals are in [reports/live_track_record.md](reports/live_track_record.md).
+
+How the pipeline stays honest:
+- A snapshot only uses inspections dated before the day it was made.
+- An inspection is only compared to a snapshot from an earlier day, and it is scored once.
+- Live features are built by the same `build_features` code used for training, and a test checks the two give the same score.
+- The live folder only accepts snapshots dated today. Replays of past dates go to a separate folder and are labeled as replays.

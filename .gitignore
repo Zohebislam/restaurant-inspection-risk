@@ -8,5 +8,9 @@ data/processed/*
 __pycache__/
 .ipynb_checkpoints/
 .DS_Store
-models/
+models/*
+# The frozen model the live pipeline scores with has to be in the repo
+!models/gradient_boosting.joblib
+replay/
+.pytest_cache/
 !data/processed/scored_inspections.csv

@@ -76,9 +76,9 @@ def parse_violations(text: str) -> tuple[int, str, str]:
     return len(codes), ";".join(codes), " ".join(comments)
 
 
-def main() -> None:
-    df = standardize_columns(pd.read_csv(RAW_PATH, dtype=str))
-    n_raw = len(df)
+def clean_inspections(raw: pd.DataFrame) -> pd.DataFrame:
+    """Turn the raw download (all columns read as text) into the clean table."""
+    df = standardize_columns(raw.copy())
 
     # Basic types
     df = df.drop_duplicates(subset="inspection_id")
@@ -129,11 +129,16 @@ def main() -> None:
         "prev_result", "prev_failed", "days_since_prev", "prior_inspections",
         "inspector_comments", "violations",
     ]
-    df = df[[c for c in keep if c in df.columns]]
+    return df[[c for c in keep if c in df.columns]]
+
+
+def main() -> None:
+    raw = pd.read_csv(RAW_PATH, dtype=str)
+    df = clean_inspections(raw)
 
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(OUT_PATH, index=False)
-    print(f"Raw rows: {n_raw:,}")
+    print(f"Raw rows: {len(raw):,}")
     print(f"Clean restaurant inspections: {len(df):,}")
     print(f"Unique restaurants: {df['license_number'].nunique():,}")
     print(f"Date range: {df['inspection_date'].min():%Y-%m-%d} to {df['inspection_date'].max():%Y-%m-%d}")

@@ -26,6 +26,8 @@ OUT_PATH = ROOT / "data" / "processed" / "features.csv"
 CODE_CHANGE_DATE = pd.Timestamp("2018-07-01")
 N_TOP_VIOLATIONS = 20  # track history for the 20 most common violation numbers
 
+ID_COLS = ["inspection_id", "license_number", "dba_name", "inspection_date", "latitude", "longitude"]
+
 # Words in inspector comments that may signal a bigger problem.
 KEYWORDS = {
     "kw_rodent": r"rodent|mouse|mice|rat |rats|droppings",
@@ -51,10 +53,18 @@ def last_value_before(df: pd.DataFrame, col: str) -> pd.Series:
     return shifted.groupby(df["license_number"]).ffill()
 
 
-def main() -> None:
-    df = pd.read_csv(CLEAN_PATH, parse_dates=["inspection_date"], low_memory=False,
-                     dtype={"violation_codes": str})
-    df = df.sort_values(["license_number", "inspection_date", "inspection_id"]).reset_index(drop=True)
+def build_features(clean: pd.DataFrame, top_codes: list[str] | None = None,
+                   ) -> tuple[pd.DataFrame, list[str], list[str]]:
+    """
+    Add the model features to every row of the clean table.
+
+    `top_codes` is the list of violation numbers to track. Leave it empty when
+    training (the 20 most common are picked from the data). Pass the trained
+    model's list when scoring new data, so the columns match the model.
+
+    Returns (table with features, feature column names, violation numbers tracked).
+    """
+    df = clean.sort_values(["license_number", "inspection_date", "inspection_id"]).reset_index(drop=True)
     grp = df.groupby("license_number")
 
     # --- Outcome indicators for the current row (used ONLY via past sums/shifts) ---
@@ -93,8 +103,9 @@ def main() -> None:
 
     # --- Specific violation history (new food code numbering only) ---
     new_code = df["new_food_code"] == 1
-    codes = df.loc[new_code, "violation_codes"].dropna().astype(str).str.split(";").explode()
-    top_codes = codes[codes != ""].value_counts().head(N_TOP_VIOLATIONS).index.tolist()
+    if top_codes is None:
+        codes = df.loc[new_code, "violation_codes"].dropna().astype(str).str.split(";").explode()
+        top_codes = codes[codes != ""].value_counts().head(N_TOP_VIOLATIONS).index.tolist()
     code_sets = df["violation_codes"].fillna("").astype(str).str.split(";").apply(set)
     for code in top_codes:
         col = f"_v{code}"
@@ -102,15 +113,11 @@ def main() -> None:
         df[f"past_viol_{code}"] = past_cumsum(df, col)
 
     # --- Keywords in past inspector comments ---
-    comments = df["inspector_comments"].fillna("").str.lower()
+    comments = df["inspector_comments"].fillna("").astype(str).str.lower()
     for name, pattern in KEYWORDS.items():
         df[f"_{name}"] = comments.str.contains(pattern, regex=True).astype(int)
         df[f"past_{name}"] = past_cumsum(df, f"_{name}")
 
-    # --- Keep the rows we want to predict ---
-    model_rows = df[(df["is_routine"] == 1) & (df["inspection_date"] >= CODE_CHANGE_DATE)].copy()
-
-    id_cols = ["inspection_id", "license_number", "dba_name", "inspection_date", "latitude", "longitude"]
     feature_cols = (
         ["risk_level", "month", "prior_inspections", "prior_fails", "prior_conditions",
          "prior_complaints", "prior_fail_rate", "prior_avg_violations",
@@ -120,7 +127,17 @@ def main() -> None:
         + [f"past_viol_{c}" for c in top_codes]
         + [f"past_{k}" for k in KEYWORDS]
     )
-    out = model_rows[id_cols + feature_cols + ["failed"]]
+    return df, feature_cols, top_codes
+
+
+def main() -> None:
+    clean = pd.read_csv(CLEAN_PATH, parse_dates=["inspection_date"], low_memory=False,
+                        dtype={"violation_codes": str})
+    df, feature_cols, top_codes = build_features(clean)
+
+    # --- Keep the rows we want to predict ---
+    model_rows = df[(df["is_routine"] == 1) & (df["inspection_date"] >= CODE_CHANGE_DATE)].copy()
+    out = model_rows[ID_COLS + feature_cols + ["failed"]]
 
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     out.to_csv(OUT_PATH, index=False)
