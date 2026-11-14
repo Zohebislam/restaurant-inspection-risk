@@ -42,7 +42,11 @@ streamlit run app.py
 # Step 6: live predictions (runs by itself every Monday on GitHub Actions)
 pip install -r requirements-live.txt
 python src/live.py            # -> live/ and reports/live_track_record.md
-pytest                        # tests for the live pipeline
+pytest                        # tests for the live pipeline and the LLM evaluation
+
+# Step 7: LLM evaluation (needs OmniRoute running locally with a Gemini key)
+export OMNIROUTE_API_KEY=$(cat ~/.omniroute_key)
+python src/llm_eval.py        # -> reports/llm_eval.md
 ```
 
 ## Project structure
@@ -50,7 +54,9 @@ pytest                        # tests for the live pipeline
 restaurant-inspection-risk/
 ├── data/
 │   ├── raw/                 # downloaded data (not committed to git)
-│   └── processed/           # cleaned data (not committed to git)
+│   ├── processed/           # cleaned data (not committed to git)
+│   └── reference/
+│       └── violation_groups.csv # violation codes grouped into 7 categories
 ├── .github/workflows/
 │   └── live.yml             # runs src/live.py every Monday and commits the results
 ├── live/
@@ -63,7 +69,9 @@ restaurant-inspection-risk/
 │   ├── eda_summary.md       # exploration findings
 │   ├── model_results.md     # model vs. baseline
 │   ├── simulation_results.md # business impact
-│   └── live_track_record.md # running results of the live predictions
+│   ├── live_track_record.md # running results of the live predictions
+│   ├── llm_eval.md          # LLM vs. trained model vs. keyword rules
+│   └── llm_eval/            # fixed test set, saved LLM answers, scores
 ├── src/
 │   ├── download_data.py     # step 1a: download
 │   ├── clean.py             # step 1b: clean
@@ -73,9 +81,11 @@ restaurant-inspection-risk/
 │   ├── download_external.py # step 3a: 311 + weather
 │   ├── external_features.py # step 3b: outside-data features
 │   ├── simulation.py        # step 4: business impact
-│   └── live.py              # step 6: live weekly predictions
+│   ├── live.py              # step 6: live weekly predictions
+│   └── llm_eval.py          # step 7: LLM evaluation on inspector notes
 ├── tests/
-│   └── test_live.py         # tests for the live pipeline
+│   ├── test_live.py         # tests for the live pipeline
+│   └── test_llm_eval.py     # tests for the LLM evaluation (fake LLM, no network)
 ├── app.py                   # step 5: Streamlit app
 ├── requirements.txt         # packages for steps 1 to 5 and the app
 └── requirements-live.txt    # packages for step 6 (pinned scikit-learn)
@@ -122,3 +132,15 @@ How the pipeline stays honest:
 - An inspection is only compared to a snapshot from an earlier day, and it is scored once.
 - Live features are built by the same `build_features` code used for training, and a test checks the two give the same score.
 - The live folder only accepts snapshots dated today. Replays of past dates go to a separate folder and are labeled as replays.
+
+## Can an LLM read inspector notes?
+The model's text features come from keyword lists (step 2). Step 7 tests whether an LLM reads inspector notes better than those keywords, and better than a classic trained model.
+
+Every violation in the data comes with an official code, which makes a free answer key: each method sees only the inspector's note and has to pick which of 7 categories it belongs to (pests, temperature, hand hygiene, food protection, cleaning, facilities, management & paperwork). Nothing is labeled by hand.
+
+- **Test set:** 280 notes from 2025 on, 40 per category, saved in [`reports/llm_eval/test_notes.csv`](reports/llm_eval/test_notes.csv) so every method is scored on the same notes.
+- **Keyword rules:** the risk model's own word lists.
+- **Trained model:** TF-IDF + logistic regression on about 290,000 notes from before 2025, with any note identical to a test note removed.
+- **LLM:** Gemini, zero-shot (category names and official titles only, no examples), through a local [OmniRoute](https://omniroute.online) gateway on Google's free tier. Its answers are saved, so the report can be rebuilt without calling it again.
+
+Results and the full write-up: [reports/llm_eval.md](reports/llm_eval.md).
