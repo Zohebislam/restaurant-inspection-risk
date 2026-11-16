@@ -92,12 +92,12 @@ restaurant-inspection-risk/
 ```
 
 ## Cleaning decisions
-- **Restaurants only:** kept facility types containing "restaurant."
-- **Real outcomes only:** kept Pass, Pass w/ Conditions, and Fail. Dropped "Out of Business," "No Entry," and similar results, since no inspection actually happened.
-- **Inspection categories:** grouped dozens of inspection type spellings into routine (canvass), complaint, re-inspection, license, and other.
-- **Violations:** parsed the violations text into a count, the list of violation numbers, and the inspector comments (saved for NLP later).
-- **Food code change:** Chicago adopted a new food code on July 1, 2018, which renumbered violations. The `new_food_code` column marks inspections after that date.
-- **No data leakage:** the "previous result" columns use only a restaurant's earlier inspections. The current inspection's violations are never used to predict its own result.
+- Kept only facility types containing "restaurant."
+- Kept Pass, Pass w/ Conditions, and Fail. Dropped "Out of Business," "No Entry," and similar results, since no inspection actually happened.
+- Grouped dozens of inspection type spellings into routine (canvass), complaint, re-inspection, license, and other.
+- Parsed the violations text into a count, the list of violation numbers, and the inspector comments (saved for NLP later).
+- Chicago adopted a new food code on July 1, 2018, which renumbered violations. The `new_food_code` column marks inspections after that date.
+- To avoid data leakage, the "previous result" columns use only a restaurant's earlier inspections. The current inspection's violations are never used to predict its own result.
 
 ## Findings
 See [reports/eda_summary.md](reports/eda_summary.md).
@@ -105,17 +105,17 @@ See [reports/eda_summary.md](reports/eda_summary.md).
 ## Results
 Tested on 15,363 routine inspections from January 2024 to October 2026, using a model trained only on earlier years.
 
-**Business impact** ([full report](reports/simulation_results.md)): each month keeps its real inspection dates, and the model only changes which restaurant gets visited first.
+Business impact ([full report](reports/simulation_results.md)): each month keeps its real inspection dates, and the model only changes which restaurant gets visited first.
 - Failing restaurants would have been found **3.2 days sooner on average**, for a total of **11,381 fewer days** that failing kitchens stayed open before an inspector arrived.
 - By the middle of each month, inspectors would have found **65.5%** of that month's failures, compared to **50.1%** in the actual order.
 
 ![simulation](reports/figures/11_simulation.png)
 
-**Model vs. baseline** ([full report](reports/model_results.md)): with the same number of flags as the simple rule "failed its last routine inspection," the model finds **1,155** failing restaurants vs. **934** (**+221**, about 24% more).
+Model vs. baseline ([full report](reports/model_results.md)): with the same number of flags as the simple rule "failed its last routine inspection," the model finds **1,155** failing restaurants vs. **934** (**+221**, about 24% more).
 
-**What mattered:** a restaurant's average number of past violations was the strongest signal, more than whether it passed or failed. Restaurants that keep barely passing with many violations are a warning sign the pass/fail result hides.
+A restaurant's average number of past violations was the strongest signal, more than whether it passed or failed. Restaurants that keep barely passing with many violations are a warning sign the pass/fail result hides.
 
-**What didn't:** nearby 311 rodent and sanitation complaints and weather barely changed results ([report](reports/model_results_plus.md)), so a restaurant's own track record carries most of the signal. Logistic regression performed about as well as gradient boosting.
+Nearby 311 rodent and sanitation complaints and weather barely changed results ([report](reports/model_results_plus.md)), so a restaurant's own track record carries most of the signal. Logistic regression performed about as well as gradient boosting.
 
 ## Live track record
 The results above come from past inspections the model never trained on. Step 6 goes one step further and tests the model on inspections that have not happened yet.
@@ -138,9 +138,9 @@ The model's text features come from keyword lists (step 2). Step 7 tests whether
 
 Every violation in the data comes with an official code, which makes a free answer key: each method sees only the inspector's note and has to pick which of 7 categories it belongs to (pests, temperature, hand hygiene, food protection, cleaning, facilities, management & paperwork). Nothing is labeled by hand.
 
-- **Test set:** 280 notes from 2025 on, 40 per category, saved in [`reports/llm_eval/test_notes.csv`](reports/llm_eval/test_notes.csv) so every method is scored on the same notes.
-- **Keyword rules:** the risk model's own word lists.
-- **Trained model:** TF-IDF + logistic regression on about 290,000 notes from before 2025, with any note identical to a test note removed.
-- **LLM:** Gemini, zero-shot (category names and official titles only, no examples), through a local [OmniRoute](https://omniroute.online) gateway on Google's free tier. Its answers are saved, so the report can be rebuilt without calling it again.
+- Test set: 280 notes from 2025 on, 40 per category, saved in [`reports/llm_eval/test_notes.csv`](reports/llm_eval/test_notes.csv) so every method is scored on the same notes.
+- Keyword rules: the risk model's own word lists.
+- Trained model: TF-IDF + logistic regression on about 290,000 notes from before 2025, with any note identical to a test note removed.
+- LLM: Gemini, zero-shot (category names and official titles only, no examples), through a local [OmniRoute](https://omniroute.online) gateway on Google's free tier. Its answers are saved, so the report can be rebuilt without calling it again.
 
 Results and the full write-up: [reports/llm_eval.md](reports/llm_eval.md).
