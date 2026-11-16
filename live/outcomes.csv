@@ -1,1 +1,2 @@
 inspection_id,license_number,dba_name,inspection_date,results,failed,snapshot_date,lead_days,risk_score,risk_percentile,last_routine_failed
+2646725,2988119,MEXICOLOMBIA,2026-11-13,Pass,0,2026-11-12,1,0.42486,0.46618,0.0
