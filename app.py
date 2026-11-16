@@ -1,13 +1,4 @@
-"""
-Step 5: Interactive app.
-
-Run from the project folder (after simulation.py):
-    streamlit run app.py
-
-Shows the model's risk scores for Chicago restaurant inspections from the test
-period (2024 onward). Every score comes from a model trained only on earlier
-years, so the app shows how the model would have done in real life.
-"""
+"""Step 5: Interactive app."""
 
 from __future__ import annotations
 

@@ -1,20 +1,4 @@
-"""
-Step 3a: Download outside data that might signal food safety problems.
-
-Run from the project folder:
-    python src/download_external.py
-
-Downloads:
-  1. Chicago 311 service requests about rodents, sanitation, and restaurants
-     (Chicago Data Portal, "311 Service Requests", dataset id v6vf-nfxy)
-     -> data/raw/311_requests.csv
-  2. Daily Chicago weather (Open-Meteo historical weather API, free, no key)
-     -> data/raw/weather_chicago.csv
-
-The 311 data downloads one month at a time. If it stops partway (a slow
-server, closed laptop), just run it again: finished months are skipped.
-Re-running skips files that already exist unless you pass --force.
-"""
+"""Step 3a: Download outside data that might signal food safety problems."""
 
 from __future__ import annotations
 

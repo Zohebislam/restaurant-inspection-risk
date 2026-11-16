@@ -1,30 +1,4 @@
-"""
-Step 6: Live predictions with a public track record.
-
-Run from the project folder:
-    python src/live.py
-
-Every run does two things:
-
-  1. SCORE: looks for routine inspections that happened since the last run and
-     compares each result to the risk score that was saved BEFORE that
-     inspection took place. Results are added to live/outcomes.csv.
-  2. PREDICT: gives every active restaurant a risk score as of today and saves
-     it to live/snapshots/YYYY-MM-DD.csv.
-
-The model is frozen (models/gradient_boosting.joblib) and never retrained here.
-Snapshots are committed to git, so the commit date proves each prediction was
-made before the inspection result existed. A scheduled GitHub Action
-(.github/workflows/live.yml) runs this every week.
-
-Outputs:
-  live/snapshots/YYYY-MM-DD.csv   one risk score per restaurant, per run
-  live/outcomes.csv               each new inspection matched to its earlier score
-  reports/live_track_record.md    running results
-
-Replaying the past (for testing only, never mixed into the live record):
-    python src/live.py --raw data/raw/food_inspections.csv --as-of 2026-09-01 --out-dir replay
-"""
+"""Step 6: Live predictions with a public track record."""
 
 from __future__ import annotations
 

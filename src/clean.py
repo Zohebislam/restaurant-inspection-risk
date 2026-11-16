@@ -1,20 +1,4 @@
-"""
-Step 1b: Clean the raw inspections data.
-
-Run from the project folder (after download_data.py):
-    python src/clean.py
-
-What it does:
-  - standardizes column names (works with the API download OR a manual CSV
-    export from the data portal website)
-  - keeps restaurants only, and only real outcomes (Pass / Pass w/ Conditions / Fail)
-  - groups the messy inspection types into a few categories
-  - parses the violations text into a count and a list of violation numbers
-  - adds each restaurant's PREVIOUS inspection result (using only earlier
-    inspections, so there's no data leakage)
-
-Output: data/processed/inspections_clean.csv
-"""
+"""Step 1b: Clean the raw inspections data."""
 
 from __future__ import annotations
 

@@ -1,21 +1,4 @@
-"""
-Step 3b: Add outside-data features to each inspection.
-
-Run from the project folder (after features.py and download_external.py):
-    python src/external_features.py
-
-For every routine inspection, counts 311 complaints NEAR the restaurant in the
-days BEFORE the inspection (never on or after the inspection date):
-  - rodent complaints within 400 m (about a quarter mile): past 30, 90, 365 days
-  - sanitation complaints within 400 m: past 90, 365 days
-  - restaurant complaints within 50 m (basically the same address): past 90, 365 days
-And adds the weather around the inspection date.
-
-If the 311 data doesn't reach far enough back to fill a window (the earliest
-inspections), that value is left blank instead of being counted as zero.
-
-Output: data/processed/features_plus.csv
-"""
+"""Step 3b: Add outside-data features to each inspection."""
 
 from __future__ import annotations
 

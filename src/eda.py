@@ -1,11 +1,4 @@
-"""
-Step 1c: First look at the data (exploratory data analysis).
-
-Run from the project folder (after clean.py):
-    python src/eda.py
-
-Saves charts to reports/figures/ and a written summary to reports/eda_summary.md.
-"""
+"""Step 1c: First look at the data (exploratory data analysis)."""
 
 from __future__ import annotations
 

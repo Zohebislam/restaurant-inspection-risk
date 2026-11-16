@@ -1,31 +1,4 @@
-"""
-Step 4: Business impact simulation.
-
-Run from the project folder (after train.py):
-    python src/simulation.py
-or, to use the model trained on the outside-data features:
-    python src/simulation.py --features features_plus.csv
-
-The question: if inspectors had visited restaurants in the model's risk order
-instead of the order they actually did, how much sooner would failing
-restaurants have been found?
-
-How it works, for each month in the test period (2024 onward):
-  - take the routine inspections that actually happened that month
-  - keep the same inspection dates (same workload, same staff)
-  - hand those dates out in risk order: the riskiest restaurant gets the
-    earliest date, and so on
-  - for every restaurant that failed, compare its actual date to its new date
-
-Simplification: it assumes the same restaurants would have been inspected that
-month and that a restaurant's result wouldn't change if it were visited a few
-days earlier or later.
-
-Outputs:
-  reports/simulation_results.md
-  reports/figures/11_simulation.png
-  data/processed/scored_inspections.csv   (used by the Streamlit app)
-"""
+"""Step 4: Business impact simulation."""
 
 from __future__ import annotations
 

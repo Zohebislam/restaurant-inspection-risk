@@ -1,28 +1,4 @@
-"""
-Step 2b: Measure the baseline and train the first models.
-
-Run from the project folder (after features.py):
-    python src/train.py
-or, after step 3 (external_features.py), with the outside-data features:
-    python src/train.py --features features_plus.csv
-
-Time-based split: the models learn from earlier years and are tested on later
-years, just like they would be used in real life.
-
-Compares three approaches on the test years:
-  1. Baseline: flag a restaurant if it failed its last routine inspection
-  2. Logistic regression
-  3. Gradient boosting (scikit-learn's HistGradientBoostingClassifier)
-
-The fair comparison: give each model the SAME number of flags as the baseline
-(same inspector workload) and count how many failures each one catches.
-
-Outputs (with "_plus" added to each name when using features_plus.csv):
-  reports/model_results.md
-  reports/figures/09_gains_curve.png
-  reports/figures/10_feature_importance.png
-  models/gradient_boosting.joblib
-"""
+"""Step 2b: Measure the baseline and train the first models."""
 
 from __future__ import annotations
 

@@ -1,16 +1,4 @@
-"""
-Step 2a: Build model features.
-
-Run from the project folder (after clean.py):
-    python src/features.py
-
-For every inspection, this builds features from that restaurant's PAST
-inspections only (everything is shifted by one inspection, so a row never
-sees its own result). It then keeps the rows the model will predict:
-routine inspections under the new food code (July 2018 onward).
-
-Output: data/processed/features.csv
-"""
+"""Step 2a: Build model features."""
 
 from __future__ import annotations
 

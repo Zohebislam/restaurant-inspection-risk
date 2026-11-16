@@ -1,36 +1,4 @@
-"""
-Step 7: Can an LLM read an inspector's note and tell what kind of violation it is?
-
-Run from the project folder:
-    python src/llm_eval.py                     # baselines + the LLM, then the report
-    python src/llm_eval.py --skip-llm          # baselines and report only
-
-Every violation in the data comes with an official code (for example 38 =
-"Insects, rodents & animals") and the inspector's free-text note. That makes a
-ready-made answer key: give a method only the note, and check whether it picks
-the right category. Nobody has to label anything by hand.
-
-Three methods are compared on the same 280 recent notes (40 per category):
-  1. Keyword rules: the same word lists the risk model uses (src/features.py)
-  2. Trained model: TF-IDF + logistic regression, trained on notes from before 2025
-  3. LLM: a Gemini model, zero-shot (category names and official titles only,
-     no training examples), called through a local OmniRoute gateway
-
-The LLM is reached through OmniRoute's OpenAI-compatible endpoint. Set the key
-in your terminal first (it is never written to a file in this repo):
-    export OMNIROUTE_API_KEY=$(cat ~/.omniroute_key)
-
-LLM answers are saved to reports/llm_eval/predictions_<model>.jsonl as they
-arrive, so a run that stops early picks up where it left off, and anyone can
-rebuild the report without calling the LLM again.
-
-Outputs:
-  reports/llm_eval/test_notes.csv     the fixed test set
-  reports/llm_eval/scores.csv         accuracy and F1 for every method
-  reports/llm_eval/note_predictions.csv  every method's answer for every test note
-  reports/llm_eval.md                 the write-up
-  reports/figures/12_llm_eval.png     chart
-"""
+"""Step 7: Can an LLM read an inspector's note and tell what kind of violation it is?"""
 
 from __future__ import annotations
 

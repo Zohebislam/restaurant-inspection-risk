@@ -53,42 +53,42 @@ python src/llm_eval.py        # -> reports/llm_eval.md
 ```
 restaurant-inspection-risk/
 ├── data/
-│   ├── raw/                 # downloaded data (not committed to git)
-│   ├── processed/           # cleaned data (not committed to git)
+│   ├── raw/
+│   ├── processed/
 │   └── reference/
-│       └── violation_groups.csv # violation codes grouped into 7 categories
+│       └── violation_groups.csv
 ├── .github/workflows/
-│   └── live.yml             # runs src/live.py every Monday and commits the results
+│   └── live.yml
 ├── live/
-│   ├── snapshots/           # one file of risk scores per weekly run
-│   └── outcomes.csv         # each new inspection matched to its earlier score
-├── models/                  # saved models (only the frozen live model is committed)
-├── notebooks/               # exploration notebooks
+│   ├── snapshots/
+│   └── outcomes.csv
+├── models/
+├── notebooks/
 ├── reports/
-│   ├── figures/             # all charts
-│   ├── eda_summary.md       # exploration findings
-│   ├── model_results.md     # model vs. baseline
-│   ├── simulation_results.md # business impact
-│   ├── live_track_record.md # running results of the live predictions
-│   ├── llm_eval.md          # LLM vs. trained model vs. keyword rules
-│   └── llm_eval/            # fixed test set, saved LLM answers, scores
+│   ├── figures/
+│   ├── eda_summary.md
+│   ├── model_results.md
+│   ├── simulation_results.md
+│   ├── live_track_record.md
+│   ├── llm_eval.md
+│   └── llm_eval/
 ├── src/
-│   ├── download_data.py     # step 1a: download
-│   ├── clean.py             # step 1b: clean
-│   ├── eda.py               # step 1c: explore
-│   ├── features.py          # step 2a: features
-│   ├── train.py             # step 2b: models
-│   ├── download_external.py # step 3a: 311 + weather
-│   ├── external_features.py # step 3b: outside-data features
-│   ├── simulation.py        # step 4: business impact
-│   ├── live.py              # step 6: live weekly predictions
-│   └── llm_eval.py          # step 7: LLM evaluation on inspector notes
+│   ├── download_data.py
+│   ├── clean.py
+│   ├── eda.py
+│   ├── features.py
+│   ├── train.py
+│   ├── download_external.py
+│   ├── external_features.py
+│   ├── simulation.py
+│   ├── live.py
+│   └── llm_eval.py
 ├── tests/
-│   ├── test_live.py         # tests for the live pipeline
-│   └── test_llm_eval.py     # tests for the LLM evaluation (fake LLM, no network)
-├── app.py                   # step 5: Streamlit app
-├── requirements.txt         # packages for steps 1 to 5 and the app
-└── requirements-live.txt    # packages for step 6 (pinned scikit-learn)
+│   ├── test_live.py
+│   └── test_llm_eval.py
+├── app.py
+├── requirements.txt
+└── requirements-live.txt
 ```
 
 ## Cleaning decisions
@@ -106,12 +106,12 @@ See [reports/eda_summary.md](reports/eda_summary.md).
 Tested on 15,363 routine inspections from January 2024 to October 2026, using a model trained only on earlier years.
 
 Business impact ([full report](reports/simulation_results.md)): each month keeps its real inspection dates, and the model only changes which restaurant gets visited first.
-- Failing restaurants would have been found **3.2 days sooner on average**, for a total of **11,381 fewer days** that failing kitchens stayed open before an inspector arrived.
-- By the middle of each month, inspectors would have found **65.5%** of that month's failures, compared to **50.1%** in the actual order.
+- Failing restaurants would have been found 3.2 days sooner on average, for a total of 11,381 fewer days that failing kitchens stayed open before an inspector arrived.
+- By the middle of each month, inspectors would have found 65.5% of that month's failures, compared to 50.1% in the actual order.
 
 ![simulation](reports/figures/11_simulation.png)
 
-Model vs. baseline ([full report](reports/model_results.md)): with the same number of flags as the simple rule "failed its last routine inspection," the model finds **1,155** failing restaurants vs. **934** (**+221**, about 24% more).
+Model vs. baseline ([full report](reports/model_results.md)): with the same number of flags as the simple rule "failed its last routine inspection," the model finds 1,155 failing restaurants vs. 934 (+221, about 24% more).
 
 A restaurant's average number of past violations was the strongest signal, more than whether it passed or failed. Restaurants that keep barely passing with many violations are a warning sign the pass/fail result hides.
 
@@ -127,7 +127,7 @@ Every Monday a GitHub Action runs `src/live.py`, which:
 
 The model is frozen, and each snapshot is committed to this repo the day it is made, so the git history shows every prediction came before its result. Running totals are in [reports/live_track_record.md](reports/live_track_record.md).
 
-How the pipeline stays honest:
+Rules the pipeline follows:
 - A snapshot only uses inspections dated before the day it was made.
 - An inspection is only compared to a snapshot from an earlier day, and it is scored once.
 - Live features are built by the same `build_features` code used for training, and a test checks the two give the same score.

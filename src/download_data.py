@@ -1,15 +1,4 @@
-"""
-Step 1a: Download Chicago's Food Inspections dataset.
-
-Source: Chicago Data Portal, "Food Inspections" (dataset id 4ijn-s7e5)
-https://data.cityofchicago.org/Health-Human-Services/Food-Inspections/4ijn-s7e5
-
-Run from the project folder:
-    python src/download_data.py
-
-The full dataset is a few hundred thousand rows, so this pulls it in pages.
-It takes a few minutes. Re-running skips the download unless you pass --force.
-"""
+"""Step 1a: Download Chicago's Food Inspections dataset."""
 
 from __future__ import annotations
 

@@ -1,11 +1,4 @@
-"""
-Tests for the LLM evaluation (src/llm_eval.py).
-
-Run from the project folder:
-    pytest
-
-They use made-up notes and a fake LLM, so they need no data, no network and no API key.
-"""
+"""Tests for the LLM evaluation (src/llm_eval.py)."""
 
 from __future__ import annotations
 

@@ -1,11 +1,4 @@
-"""
-Tests for the live prediction pipeline (src/live.py).
-
-Run from the project folder:
-    pytest
-
-They use a small made-up dataset, so they need no downloads and finish in seconds.
-"""
+"""Tests for the live prediction pipeline (src/live.py)."""
 
 from __future__ import annotations
 
