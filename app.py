@@ -251,7 +251,7 @@ with right:
                "kitchens get found sooner.")
 
 # Riskiest restaurants
-st.subheader("The 25 highest-risk restaurants right now")
+st.subheader("The 25 highest-risk restaurants at their latest inspection")
 top = view.nlargest(25, "risk_score")[["dba_name", "address", "risk_tier", "risk_percentile",
                                        "inspection_date", "results"]]
 st.dataframe(
